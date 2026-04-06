@@ -49,9 +49,11 @@ class EpubViewer extends StatefulWidget {
     this.onInitialPositionLoaded,
     this.onTouchDown,
     this.onTouchUp,
+    this.onTap,
     this.suppressNativeContextMenu = false,
     this.clearSelectionOnPageChange = true,
     this.selectAnnotationRange = false,
+    this.enableRawTouchEvents = true,
   });
 
   //Epub controller to manage epub
@@ -166,6 +168,18 @@ class EpubViewer extends StatefulWidget {
   /// without programmatically selecting the text.
   final bool selectAnnotationRange;
 
+  /// Whether to enable the raw touch events (onTouchDown/onTouchUp).
+  ///
+  /// When false, onTouchDown and onTouchUp callbacks will not be fired,
+  /// reducing noise and improving performance. The onTap callback will
+  /// still work normally.
+  ///
+  /// When true (default), all touch events will be fired as before.
+  ///
+  /// Set to false if you only need the onTap callback and want to avoid
+  /// the excessive firing of touch events during scrolling.
+  final bool enableRawTouchEvents;
+
   /// Callback fired when the user touches down on the EPUB viewer.
   ///
   /// Provides normalized coordinates (0.0-1.0) relative to the WebView dimensions.
@@ -195,6 +209,26 @@ class EpubViewer extends StatefulWidget {
   /// * [x] - Normalized X coordinate (0.0 = left edge, 1.0 = right edge)
   /// * [y] - Normalized Y coordinate (0.0 = top edge, 1.0 = bottom edge)
   final void Function(double x, double y)? onTouchUp;
+
+  /// Callback fired when the user performs a tap gesture on the EPUB viewer.
+  ///
+  /// This callback fires only for actual tap gestures - not for scrolling, dragging,
+  /// or text selection. It intelligently distinguishes between taps and other gestures
+  /// by analyzing touch duration, movement distance, and intent.
+  ///
+  /// Provides normalized coordinates (0.0-1.0) relative to the WebView dimensions.
+  /// Coordinates use the same calculation logic as selection coordinates.
+  ///
+  /// Use this for:
+  /// * Navigation controls (next/previous page zones)
+  /// * Menu toggling
+  /// * Custom UI interactions
+  /// * Any action that should only trigger on intentional taps
+  ///
+  /// Parameters:
+  /// * [x] - Normalized X coordinate (0.0 = left edge, 1.0 = right edge)
+  /// * [y] - Normalized Y coordinate (0.0 = top edge, 1.0 = bottom edge)
+  final void Function(double x, double y)? onTap;
 
   @override
   State<EpubViewer> createState() => _EpubViewerState();
@@ -385,6 +419,7 @@ class _EpubViewerState extends State<EpubViewer> {
     webViewController?.addJavaScriptHandler(
       handlerName: 'onTouchDown',
       callback: (data) {
+        if (!widget.enableRawTouchEvents) return;
         try {
           if (data.length >= 2) {
             final x = (data[0] as num).toDouble();
@@ -403,6 +438,7 @@ class _EpubViewerState extends State<EpubViewer> {
     webViewController?.addJavaScriptHandler(
       handlerName: 'onTouchUp',
       callback: (data) {
+        if (!widget.enableRawTouchEvents) return;
         try {
           if (data.length >= 2) {
             final x = (data[0] as num).toDouble();
@@ -412,6 +448,24 @@ class _EpubViewerState extends State<EpubViewer> {
         } catch (e) {
           if (kDebugMode) {
             debugPrint('Error parsing onTouchUp coordinates: $e');
+          }
+        }
+      },
+    );
+
+    // Add tap handler
+    webViewController?.addJavaScriptHandler(
+      handlerName: 'onTap',
+      callback: (data) {
+        try {
+          if (data.length >= 2) {
+            final x = (data[0] as num).toDouble();
+            final y = (data[1] as num).toDouble();
+            widget.onTap?.call(x, y);
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('Error parsing onTap coordinates: $e');
           }
         }
       },

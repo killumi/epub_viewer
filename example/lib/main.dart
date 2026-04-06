@@ -155,6 +155,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   onTouchUp: (x, y) {
                     print("Touch up at $x , $y");
                   },
+                  onTap: (x, y) {
+                    print("✅ TAP DETECTED at $x , $y");
+                  },
+                  enableRawTouchEvents:
+                      false, // Disable noisy touch events, only use onTap
                   selectAnnotationRange: true,
                 ),
                 Visibility(
