@@ -96,24 +96,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       'https://github.com/IDPF/epub3-samples/releases/download/20230704/accessible_epub_3.epub'),
                   epubController: epubController,
                   displaySettings: EpubDisplaySettings(
-                      flow: EpubFlow.paginated,
+                      flow: EpubFlow.scrolled,
                       useSnapAnimationAndroid: false,
                       snap: true,
                       theme: EpubTheme.light(),
                       allowScriptedContent: true),
-                  selectionContextMenu: ContextMenu(
-                    menuItems: [
-                      ContextMenuItem(
-                        title: "Highlight",
-                        id: 1,
-                        action: () async {
-                          epubController.addHighlight(cfi: textSelectionCfi);
-                        },
-                      ),
-                    ],
-                    settings: ContextMenuSettings(
-                        hideDefaultSystemContextMenuItems: true),
-                  ),
+                  selectionContextMenu: null,
                   onChaptersLoaded: (chapters) {
                     setState(() {
                       isLoading = false;
@@ -158,6 +146,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   onTap: (x, y) {
                     print("✅ TAP DETECTED at $x , $y");
                   },
+                  onFontSizeChanged: (fontSize) {
+                    print("📝 FONT SIZE CHANGED to: $fontSize px");
+                  },
+                  minFontSize: 8,
+                  maxFontSize: 40,
                   clearWebViewCache: true, // Add this for testing
                   enableRawTouchEvents:
                       false, // Disable noisy touch events, only use onTap

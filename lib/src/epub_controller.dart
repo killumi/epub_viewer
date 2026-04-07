@@ -45,8 +45,7 @@ class EpubController {
     webViewController?.evaluateJavascript(source: 'previous()');
   }
 
-   Completer<EpubLocation> currentLocationCompleter =
-      Completer<EpubLocation>();
+  Completer<EpubLocation> currentLocationCompleter = Completer<EpubLocation>();
 
   ///Returns current location of epub viewer
   Future<EpubLocation> getCurrentLocation() async {
@@ -177,7 +176,7 @@ class EpubController {
   ///Adjust font size in epub viewer
   setFontSize({required double fontSize}) async {
     await webViewController?.evaluateJavascript(
-      source: 'setFontSize("$fontSize")',
+      source: 'setFontSize($fontSize)',
     );
   }
 
@@ -285,5 +284,3 @@ class EpubController {
     }
   }
 }
-
-

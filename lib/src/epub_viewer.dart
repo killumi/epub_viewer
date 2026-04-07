@@ -50,6 +50,9 @@ class EpubViewer extends StatefulWidget {
     this.onTouchDown,
     this.onTouchUp,
     this.onTap,
+    this.onFontSizeChanged,
+    this.minFontSize,
+    this.maxFontSize,
     this.clearWebViewCache = false,
     this.suppressNativeContextMenu = false,
     this.clearSelectionOnPageChange = true,
@@ -234,6 +237,17 @@ class EpubViewer extends StatefulWidget {
   /// Force clear WebView cache and local storage on initialization
   /// Useful for debugging or ensuring fresh content after updates
   final bool clearWebViewCache;
+
+  /// Called when font size changes via zoom gesture
+  /// Parameters:
+  /// * [fontSize] - New font size in pixels
+  final void Function(double fontSize)? onFontSizeChanged;
+
+  /// Minimum font size for zoom gesture (default: 10px)
+  final double? minFontSize;
+
+  /// Maximum font size for zoom gesture (default: 32px)
+  final double? maxFontSize;
 
   @override
   State<EpubViewer> createState() => _EpubViewerState();
@@ -476,6 +490,29 @@ class _EpubViewerState extends State<EpubViewer> {
       },
     );
 
+    // Add font size change handler
+    webViewController?.addJavaScriptHandler(
+      handlerName: 'onFontSizeChanged',
+      callback: (data) {
+        try {
+          if (kDebugMode) {
+            debugPrint('onFontSizeChanged received data: $data');
+          }
+          if (data.isNotEmpty) {
+            final fontSize = (data[0] as num).toDouble();
+            if (kDebugMode) {
+              debugPrint('onFontSizeChanged calling callback with: $fontSize');
+            }
+            widget.onFontSizeChanged?.call(fontSize);
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('Error parsing font size: $e');
+          }
+        }
+      },
+    );
+
     webViewController?.addJavaScriptHandler(
       handlerName: "search",
       callback: (data) async {
@@ -657,7 +694,7 @@ class _EpubViewerState extends State<EpubViewer> {
 
     webViewController?.evaluateJavascript(
       source:
-          'loadBook([${data.join(',')}], "$cfi", $xpathParam, "$manager", "$flow", "$spread", $snap, $allowScripted, "$direction", $useCustomSwipe, "${null}", "$foregroundColor", "$fontSize", $clearSelectionOnPageChange, ${widget.selectAnnotationRange}, $customCss)',
+          'loadBook([${data.join(',')}], "$cfi", $xpathParam, "$manager", "$flow", "$spread", $snap, $allowScripted, "$direction", $useCustomSwipe, "${null}", "$foregroundColor", "$fontSize", $clearSelectionOnPageChange, ${widget.selectAnnotationRange}, $customCss, ${widget.minFontSize ?? 10}, ${widget.maxFontSize ?? 32})',
     );
   }
 
