@@ -151,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   minFontSize: 8,
                   maxFontSize: 40,
-                  clearWebViewCache: true, // Add this for testing
+                  // clearWebViewCache: true, // Add this for testing
                   enableRawTouchEvents:
                       false, // Disable noisy touch events, only use onTap
                   selectAnnotationRange: true,
