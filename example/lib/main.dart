@@ -158,6 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onTap: (x, y) {
                     print("✅ TAP DETECTED at $x , $y");
                   },
+                  clearWebViewCache: true, // Add this for testing
                   enableRawTouchEvents:
                       false, // Disable noisy touch events, only use onTap
                   selectAnnotationRange: true,

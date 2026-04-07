@@ -50,6 +50,7 @@ class EpubViewer extends StatefulWidget {
     this.onTouchDown,
     this.onTouchUp,
     this.onTap,
+    this.clearWebViewCache = false,
     this.suppressNativeContextMenu = false,
     this.clearSelectionOnPageChange = true,
     this.selectAnnotationRange = false,
@@ -229,6 +230,10 @@ class EpubViewer extends StatefulWidget {
   /// * [x] - Normalized X coordinate (0.0 = left edge, 1.0 = right edge)
   /// * [y] - Normalized Y coordinate (0.0 = top edge, 1.0 = bottom edge)
   final void Function(double x, double y)? onTap;
+
+  /// Force clear WebView cache and local storage on initialization
+  /// Useful for debugging or ensuring fresh content after updates
+  final bool clearWebViewCache;
 
   @override
   State<EpubViewer> createState() => _EpubViewerState();
@@ -677,6 +682,12 @@ class _EpubViewerState extends State<EpubViewer> {
         onWebViewCreated: (controller) async {
           webViewController = controller;
           widget.epubController.setWebViewController(controller);
+
+          // Clear cache if requested
+          if (widget.clearWebViewCache) {
+            await InAppWebViewController.clearAllCache();
+          }
+
           addJavaScriptHandlers();
         },
         onLoadStart: (controller, url) {},
